@@ -1,0 +1,9 @@
+UNITY WEBGL MULTIPLAYER ROOMS TEMPLATE DOCUMENTATION
+
+The most important script is the MultiplayerManager.cs which handles receiving and sending sockets to the server.
+
+The server listens for all players and sends a message to the client. Then the client calls the C# script in the game with the necessary data.
+
+This code prioritizes performance and game smoothness by only sending sockets on velocity change and preserving speed unless it detects changes.
+
+This code also optimizes external calls by caching frequently used variables such as Transform and Rigidbody.
