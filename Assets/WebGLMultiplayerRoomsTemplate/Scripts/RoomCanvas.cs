@@ -47,10 +47,6 @@ public class RoomCanvas : MonoBehaviour
     [SerializeField] private GameObject playerRowPrefab;
     [SerializeField] private GameObject totalPlayersObject;
 
-    void Awake()
-    {
-        
-    }
     private void Start()
     {
         if (RoomCanvasInstance == null)
@@ -77,11 +73,13 @@ public class RoomCanvas : MonoBehaviour
             btn.interactable = false;
         }
     }
+
     //START
     public void UnlockStart(){startGameButton.GetComponent<Button>().interactable = true; }
     public void LockStart() { startGameButton.GetComponent<Button>().interactable = false; }
     public void HideStart() { startGameButton.SetActive(false); }
     public void ShowStart() { startGameButton.SetActive(true); }
+
     //READY
     public void UnlockReady(){readyButton.GetComponent<Button>().interactable = true;}
     public void LockReady() { readyButton.GetComponent<Button>().interactable = false;}
@@ -93,11 +91,13 @@ public class RoomCanvas : MonoBehaviour
     public void LockUnready() { unreadyButton.GetComponent<Button>().interactable = false;}
     public void HideUnready() { unreadyButton.SetActive(false); }
     public void ShowUnready() { unreadyButton.SetActive(true); }
+
     //CLOSE
     public void UnlockClose(){closeRoomButton.GetComponent<Button>().interactable = true; }
     public void LockClose() { closeRoomButton.GetComponent<Button>().interactable = false; }
     public void HideClose() { closeRoomButton.SetActive(false); }
     public void ShowClose() { closeRoomButton.SetActive(true); }
+
     //LEAVE
     public void UnlockLeave(){leaveButton.GetComponent<Button>().interactable = true; }
     public void LockLeave() { leaveButton.GetComponent<Button>().interactable = false; }
@@ -168,14 +168,14 @@ public class RoomCanvas : MonoBehaviour
         {
             PlayerRow pr = Instantiate(playerRowPrefab, playersContentObject.transform).GetComponent<PlayerRow>();
             bool kickable = false;
-            if (MultiplayerManager.MultiplayerManagerInstance.local_player_id == rm.id)  // if client is owner of the room
+            if (MultiplayerManager.MultiplayerManagerInstance.local_player_id == rm.id)                                     // if client is owner of the room
             {
                 ShowOwnerOptions(rm.confirmedPlayers.Contains(MultiplayerManager.MultiplayerManagerInstance.local_player_id));
-                if (playerid != MultiplayerManager.MultiplayerManagerInstance.local_player_id)          // if this is not the owner: Add kick and make host
+                if (playerid != MultiplayerManager.MultiplayerManagerInstance.local_player_id)                              // if this is not the owner: Add kick option
                 {
                     kickable = true;
                 }
-                if (rm.allPlayers.Count > 1 && rm.allPlayers.Count == rm.confirmedPlayers.Count) // Room is ready
+                if (rm.allPlayers.Count > 1 && rm.allPlayers.Count == rm.confirmedPlayers.Count)                            // Room is ready unlock start button
                 {
                     UnlockStart();
                 }

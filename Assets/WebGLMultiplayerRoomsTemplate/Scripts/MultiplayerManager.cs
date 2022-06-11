@@ -43,28 +43,17 @@ public class MultiplayerManager : MonoBehaviour
 	public Dictionary<string, PlayerManager> networkPlayers = new Dictionary<string, PlayerManager>();
 	public Dictionary<string, RoomManager> networkRooms = new Dictionary<string, RoomManager>();
 
-	[Header("Local Player Prefab")]
-	[SerializeField]
-	private GameObject localPlayerPrefab;
+	[Header("Local Player Prefab")] [SerializeField] private GameObject localPlayerPrefab;
 
-	[Header("Network Player Prefab")]
-	[SerializeField]
-	private GameObject networkPlayerPrefab;
+	[Header("Network Player Prefab")] [SerializeField] private GameObject networkPlayerPrefab;
 
-	[Header("Player Spawn Points")]
-	[SerializeField]
-	private Transform[] spawnPoints;
+	[Header("Player Spawn Points")] [SerializeField] private Transform[] spawnPoints;
 
-	[Header("Camera Prefab")]
-	[SerializeField]
-	private GameObject camPref;
+	[Header("Camera Prefab")] [SerializeField] private GameObject camPref;
 
-	[HideInInspector]
-	public GameObject camRig;
-
-	[HideInInspector]
-	public bool isGameStarted;
-	private bool isGameOver;
+	[HideInInspector] public GameObject camRig;
+	[HideInInspector] public bool isGameStarted;
+	[HideInInspector] private bool isGameOver;
 
 	#region Initialization
 	void Awake()
@@ -370,7 +359,7 @@ public class MultiplayerManager : MonoBehaviour
 		}
 		if (pack[0] == pack[1]) // if player who left is owner of the room
         { 
-			
+			//So far, nothing needs to be done. But if in the future you want to give ownership to another player, this is the place.
         }
 		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateRooms();
 
@@ -450,16 +439,16 @@ public class MultiplayerManager : MonoBehaviour
 				networkRooms[pack[0]].spawnedPlayers++;
 				if (networkRooms[pack[0]].spawnedPlayers == networkRooms[pack[0]].totalPlayers)
 				{
-					GameManager.GameInstance.gameState = GameManager.GameState.Started; // TODO need to change the state of the game to start at the same time for all players after maybe 5 seconds
+					GameManager.GameInstance.gameState = GameManager.GameState.Started; // TODO need to change the state of the game to start at the same time for all players after maybe 5 seconds so all players have time to load.
 																						//GameManager.GameInstance.gameState = GameManager.GameState.Initiated; // this will be the right state
-					Debug.Log("All Players have Logged!");
+					Debug.Log("All Players have Spawned!");
 				}
 			}
 		}
 
 		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("START GAME SUCCESS");
 	}
-	public void EndGame() // SEND START GAME REQUEST TO SERVER FOR THE CURRENT PLAYER
+	public void EndGame() // SEND END GAME REQUEST TO SERVER FOR THE CURRENT PLAYER
 	{
 		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ENDING MULTIPLAYER GAME");
 
@@ -528,7 +517,27 @@ public class MultiplayerManager : MonoBehaviour
 
 		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED END");
 	}
-    #endregion
+
+	public void OnUserLeft(string data)
+	{
+		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER LEFT: " + data);
+		/*
+		 * data.pack[0] = id (network player id)
+		*/
+		var pack = data.Split(Delimiter);
+		if (networkPlayers.ContainsKey(pack[0]))
+		{
+			
+			MultiplayerCanvas.MultiplayerCanvasInstance.UpdatePlayers();
+		}
+		if (pack[0] == local_player_id)
+		{
+			OnApplicationQuit();
+		}
+
+		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED END");
+	}
+	#endregion
 
 	void OnApplicationQuit()
 	{

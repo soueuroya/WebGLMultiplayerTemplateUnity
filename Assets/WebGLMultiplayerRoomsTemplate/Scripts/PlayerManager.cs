@@ -97,6 +97,11 @@ public class PlayerManager
 		if (isLocalPlayer)
 		{
 			Move();
+
+			if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Tab))
+            {
+				PauseCanvas.PauseCanvasInstance.TogglePause();
+            }
 		}
 	}
 

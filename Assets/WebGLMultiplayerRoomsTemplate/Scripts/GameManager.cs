@@ -55,7 +55,7 @@ public class GameManager : MonoBehaviour
     {
         gameState = GameState.Loading;
         MenuManager.MenuInstance.LoadGameMenu();
-        SceneManager.LoadScene("Multiplayer");
+        SceneManager.LoadScene("Multiplayer"); // Can be level 1, level 2... as long as the levels are ready for multiplayer gameplay.
     }
 
     public void LoadRoomMenu() // This should be loaded when the game is finished and all the players are returning to the room
