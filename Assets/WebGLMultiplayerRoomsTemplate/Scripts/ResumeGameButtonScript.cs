@@ -8,6 +8,7 @@ public class ResumeGameButtonScript : MonoBehaviour
 
     public void OnClick()
     {
+        Debug.Log("CLICKED");
         pauseCanvas.gameObject.SetActive(false);
     }
 

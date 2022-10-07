@@ -34,6 +34,12 @@ public class MultiplayerGameManager : MonoBehaviour
 {
     void Start()
     {
-        MultiplayerManager.MultiplayerManagerInstance.StartGame();
+        if (typeof(MultiplayerManager) != null)
+        {
+            if (MultiplayerManager.MultiplayerManagerInstance != null)
+            {
+                MultiplayerManager.MultiplayerManagerInstance.StartGame();
+            }
+        }
     }
 }

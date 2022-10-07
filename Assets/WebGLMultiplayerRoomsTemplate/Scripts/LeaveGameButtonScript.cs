@@ -7,7 +7,7 @@ public class LeaveGameButtonScript : MonoBehaviour
 {
     public void OnClick()
     {
-        MultiplayerManager.MultiplayerManagerInstance.LeaveRoom(); // Just emits leave room. The multiplayer manager will update the situation to the other players.
+        MultiplayerManager.MultiplayerManagerInstance.LeaveGame(); // Just emits leave room. The multiplayer manager will update the situation to the other players.
         SceneManager.LoadScene("Menu"); // Loads the menu scene.
     }
 }

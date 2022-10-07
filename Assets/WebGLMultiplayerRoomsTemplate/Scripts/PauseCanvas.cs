@@ -7,7 +7,7 @@ public class PauseCanvas : MonoBehaviour
     public static PauseCanvas PauseCanvasInstance { get; private set; }
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (PauseCanvasInstance== null)
         {

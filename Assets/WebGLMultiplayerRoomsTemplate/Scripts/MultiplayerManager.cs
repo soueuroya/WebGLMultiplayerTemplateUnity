@@ -57,9 +57,6 @@ public class MultiplayerManager : MonoBehaviour
 
 	#region Initialization
 	void Awake()
-	{	
-	}
-	void Start()
 	{
 		if (MultiplayerManagerInstance == null)
 		{
@@ -203,11 +200,11 @@ public class MultiplayerManager : MonoBehaviour
 				networkPlayers[local_player_id].SetRoomId(null); // set room to null
 				MenuManager.MenuInstance.LoadMultiplayerMenu(); // load the multiplayer canvas
 				MultiplayerCanvas.MultiplayerCanvasInstance.UnlockButtons(); // unlock multiplayer buttons
-				if (isGameStarted)
+				/*if (isGameStarted) // TODO not used anymore
 				{
 					isGameStarted = true;
 					GameManager.GameInstance.LoadMultiplayerMenu();
-				}
+				}*/
 			}
 			Destroy(networkRooms[pack[0]].thisRoomObject);
 			networkRooms.Remove(pack[0]);
@@ -498,29 +495,104 @@ public class MultiplayerManager : MonoBehaviour
 
 		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("UPDATE MOVE AND ROTATE END");
 	}
+	public void LeaveGame()                                                                                                                 // SEND LEAVE ROOM REQUEST 
+	{
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("LEAVING GAME");
+
+		Dictionary<string, string> data = new Dictionary<string, string>();
+		data["room"] = networkPlayers[local_player_id].GetRoomId();
+		data["player"] = local_player_id;
+		Application.ExternalCall("socket.emit", "LEAVE_GAME", new JSONObject(data));
+
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("SENT LEAVE GAME");
+	}
+	public void OnLeaveGame(string data)                                                                // RECEIVING PLAYER LEAVING ROOM - BOOTH LOCAL AND NETWORK - RECEIVES ALSO KICK REQUESTS - ALSO WHEN OWNER DISCONNECTS
+	{
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON LEAVE GAME: " + data);
+
+		var pack = data.Split(Delimiter); // [0] roomId - [1] playerId
+		if (networkRooms[pack[0]].allPlayers.Contains(pack[1])) // if room cointains player
+		{
+			networkRooms[pack[0]].allPlayers.Remove(pack[1]); // remove player from room
+			networkRooms[pack[0]].totalPlayers--; // decrease total players
+			if (networkRooms[pack[0]].confirmedPlayers.Contains(pack[1])) // if player was confirmed
+			{
+				networkRooms[pack[0]].confirmedPlayers.Remove(pack[1]); // remove player from confirmed list
+			}
+		}
+		
+		if (networkRooms[networkPlayers[local_player_id].GetRoomId()].allPlayers.Contains(pack[0])) // If player's current room contains the player who left
+		{
+			MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER LEFT GAME 1: " + data);
+			networkPlayers[pack[0]].DestroyPlayer(); // Destroy the player from the game
+		}
+		else
+		{
+			MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER LEFT GAME 2: " + data);
+		}
+		networkPlayers[pack[1]].SetRoomId(null); // set room null to the player who left
+		if (pack[1] == local_player_id) // if local player left the room
+		{
+			MenuManager.MenuInstance.LoadMultiplayerMenu(); // load multiplayer menu
+			MultiplayerCanvas.MultiplayerCanvasInstance.UnlockButtons(); // unlock multiplayer buttons
+		}
+		if (pack[0] == pack[1]) // if player who left is owner of the room
+		{
+			//kick all the players back to multiplayer menu
+			MenuManager.MenuInstance.LoadMultiplayerMenu(); // load multiplayer menu
+			MultiplayerCanvas.MultiplayerCanvasInstance.UnlockButtons(); // unlock multiplayer buttons
+		}
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateRooms();
+
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("LEAVE GAME SUCCESS");
+	}
 	public void OnUserDisconnected(string data)
 	{
-		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED: " + data);
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED: " + data);
 		/*
 		 * data.pack[0] = id (network player id)
 		*/
 		var pack = data.Split(Delimiter);
-		if (networkPlayers.ContainsKey(pack[0]))
-		{
-			networkPlayers.Remove(pack[0]);
-			MultiplayerCanvas.MultiplayerCanvasInstance.UpdatePlayers();
-		}
 		if (pack[0] == local_player_id)
 		{
-			OnApplicationQuit();
+			LeaveGame(); // Leaves current game
+			MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("LOCAL USER: " + data);
 		}
+		else if (networkPlayers.ContainsKey(pack[0]))
+		{
+			if (networkPlayers[local_player_id].GetRoomId() == networkPlayers[pack[0]].GetRoomId())
+			{
+				MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED 5: " + data);
+				networkPlayers[pack[0]].DestroyPlayer(); // Destroy the player from the game
+			}
+			else
+            {
+				MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED 4: " + data);
+			}
 
-		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED END");
+			if (networkRooms[networkPlayers[local_player_id].GetRoomId()].allPlayers.Contains(pack[0])) // If player's current room contains the player who left
+            {
+				MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED 1: " + data);
+				networkPlayers[pack[0]].DestroyPlayer(); // Destroy the player from the game
+            }
+			else
+            {
+				MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED 2: " + data);
+			}
+		}
+		else
+        {
+			MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED 3: " + data);
+		}
+		networkPlayers.Remove(pack[0]);
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdatePlayers();
+
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED END");
 	}
 
 	public void OnUserLeft(string data)
 	{
-		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER LEFT: " + data);
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER LEFT: " + data);
 		/*
 		 * data.pack[0] = id (network player id)
 		*/
@@ -535,7 +607,7 @@ public class MultiplayerManager : MonoBehaviour
 			OnApplicationQuit();
 		}
 
-		//MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED END");
+		MultiplayerCanvas.MultiplayerCanvasInstance.UpdateServerResponse("ON USER DISCONNECTED END");
 	}
 	#endregion
 

@@ -202,4 +202,9 @@ public class PlayerManager
 	{
 		playerRigidbody.angularVelocity = Vector3.up * _rotationSpeed;
 	}
+
+	public void DestroyPlayer()
+    {
+		MonoBehaviour.Destroy(playerObject);
+    }
 }
